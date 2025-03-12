@@ -2,49 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
-.custom-scrollbar {
+:root {
+  --primary: #98dee6;
+}
+
+@layer base {
+  body {
+    @apply antialiased text-gray-900 bg-gray-50;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar Styles */
+.scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: #037ffc #e5e7eb;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+.scrollbar-thumb-primary-700::-webkit-scrollbar {
+  width: 4px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #e5e7eb;
-  border-radius: 3px;
+.scrollbar-thumb-primary-700::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #037ffc;
-  border-radius: 3px;
+.scrollbar-thumb-primary-700::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #0366d6;
+.scrollbar-thumb-primary-700::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Horizontal scrollbar styles */
-.custom-scrollbar-horizontal {
-  scrollbar-width: thin;
-  scrollbar-color: #037ffc #e5e7eb;
+/* Text stroke effect */
+.text-stroke {
+  -webkit-text-stroke: 1px currentColor;
+  color: transparent;
 }
 
-.custom-scrollbar-horizontal::-webkit-scrollbar {
-  height: 6px;
+/* Cursor blink animation */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
-.custom-scrollbar-horizontal::-webkit-scrollbar-track {
-  background: #e5e7eb;
-  border-radius: 3px;
+.animate-blink {
+  animation: blink 1s step-end infinite;
 }
 
-.custom-scrollbar-horizontal::-webkit-scrollbar-thumb {
-  background-color: #037ffc;
-  border-radius: 3px;
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
 }
 
-.custom-scrollbar-horizontal::-webkit-scrollbar-thumb:hover {
-  background-color: #0366d6;
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }

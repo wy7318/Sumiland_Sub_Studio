@@ -1,120 +1,107 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { supabase } from '../lib/supabase';
-import type { Post } from '../types/database';
-import { Calendar, ArrowLeft } from 'lucide-react';
+import { Calendar, User, Tag, Share2, Facebook, Twitter, Linkedin } from 'lucide-react';
+import { useBlogPost } from '../hooks/useBlogPost';
 
-const ORGANIZATION_ID = '4d1b70f4-dd23-48b7-8697-29e9f47cc1de';
-
-export default function BlogPost() {
-  const { slug } = useParams<{ slug: string }>();
-  const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchPost();
-  }, [slug]);
-
-  async function fetchPost() {
-    if (!slug) return;
-
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-      .eq('organization_id', ORGANIZATION_ID)
-      .eq('published', true)
-      .eq('slug', slug)
-      .single();
-
-    if (error) {
-      console.error('Error fetching post:', error);
-      return;
-    }
-
-    setPost(data);
-    setLoading(false);
-  }
-
-  function formatDate(dateString: string) {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  }
+export function BlogPost() {
+  const { slug } = useParams();
+  const { post, loading, error } = useBlogPost(slug || '');
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#037ffc] border-t-transparent"></div>
+      <div className="min-h-screen pt-20 pb-12 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
       </div>
     );
   }
 
-  if (!post) {
+  if (error || !post) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Post not found</h1>
-          <Link
-            to="/blog"
-            className="inline-flex items-center text-[#037ffc] hover:underline"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Blog
-          </Link>
+      <div className="min-h-screen pt-20 pb-12 flex items-center justify-center">
+        <div className="text-red-500">
+          {error || 'Post not found'}
         </div>
       </div>
     );
   }
 
   return (
-    <article className="min-h-screen bg-white">
-      <div className="h-[60vh] relative overflow-hidden">
-        <img
-          src={post.featured_image}
-          alt={post.title}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        
-        <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-          <div className="container mx-auto max-w-4xl">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-4"
-            >
-              <Link
-                to="/blog"
-                className="inline-flex items-center text-white/80 hover:text-white transition-colors"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Blog
-              </Link>
-              
-              <h1 className="text-4xl md:text-5xl font-bold">{post.title}</h1>
-              
-              <div className="flex items-center gap-6 text-white/80">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  {formatDate(post.published_at)}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto max-w-4xl px-4 py-16">
+    <div className="min-h-screen pt-20 pb-12">
+      <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="prose prose-lg max-w-none"
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
-      </div>
-    </article>
+          className="mb-8"
+        >
+          <img
+            src={post.featured_image || `https://source.unsplash.com/random/1200x600?${post.categories[0]?.name.toLowerCase()}`}
+            alt={post.title}
+            className="w-full h-[400px] object-cover rounded-xl mb-8"
+          />
+          
+          <div className="flex flex-wrap gap-4 items-center text-sm text-gray-500 mb-4">
+            <span className="flex items-center gap-1">
+              <Calendar className="w-4 h-4" />
+              {new Date(post.published_at || post.created_at).toLocaleDateString()}
+            </span>
+            <span className="flex items-center gap-1">
+              <User className="w-4 h-4" />
+              {post.author.name}
+            </span>
+            {post.categories.map(category => (
+              <span
+                key={category.id}
+                className="text-primary-600 bg-primary-50 px-3 py-1 rounded-full"
+              >
+                {category.name}
+              </span>
+            ))}
+          </div>
+
+          <h1 className="text-4xl font-bold mb-6">{post.title}</h1>
+          
+          <div
+            className="prose prose-lg max-w-none"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="border-t border-gray-200 pt-8 mt-8"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <img
+                src={post.author.avatar_url || `https://source.unsplash.com/random/100x100?portrait&sig=1`}
+                alt={post.author.name}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+              <div>
+                <h3 className="font-semibold">{post.author.name}</h3>
+                <p className="text-sm text-gray-500">{post.author.bio || 'Content Creator'}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-500">Share:</span>
+              <div className="flex gap-2">
+                <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <Facebook className="w-5 h-5 text-gray-600" />
+                </button>
+                <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <Twitter className="w-5 h-5 text-gray-600" />
+                </button>
+                <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <Linkedin className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </article>
+    </div>
   );
 }
